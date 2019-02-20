@@ -12,7 +12,7 @@ function readLine(callback) {
 }
 
 // TODO digi; 2016-04-08; добавить writeLine!!!
-// todo lalal
+// TODO lalal
 module.exports = {
     readLine,
 };

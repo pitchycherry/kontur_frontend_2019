@@ -16,13 +16,18 @@ function getFiles() {
 function getCommentsFile() {
     const files = getFiles();
     let commentsFile = files.map(file => {
-        return file.code.match(/\/\/\sTODO[\s:]+.*(;\s*\d{4}-\d{2}-\d{2};\s*.*)*/ig).map(comment => ({
-            "important": ~comment.indexOf('!') ? '!' : ' ',
-            "user": getAttribute('user', comment),
-            "date": getAttribute('date', comment),
-            "comment": getAttribute('comment', comment),
-            "fileName": file.path.split('/')[1],
-        }));
+        let fileCode = file.code.match(/\/\/\sTODO[\s:]+.*(;\s*\d{4}-\d{2}-\d{2};\s*.*)*/ig);
+        if (fileCode === null) {
+            return [];
+        } else {
+            return fileCode.map(comment => ({
+                "important": ~comment.indexOf('!') ? '!' : ' ',
+                "user": getAttribute('user', comment),
+                "date": getAttribute('date', comment),
+                "comment": getAttribute('comment', comment),
+                "fileName": file.path.split('/')[1],
+            }));
+        }
     });
     // Getting all objects of comments (alternative flat())
     return commentsFile.reduce((acc, val) => acc.concat(val), []);
@@ -36,7 +41,7 @@ function getAttribute(attribute, comment) {
             return ~comment.indexOf(';') ? comment.split(';')[0] : '';
         case 'date':
             comment = ~comment.indexOf(';') ? comment.split(';')[1] : '';
-            return comment.charAt(0) === ' ' ? comment.slice(1) : comment;
+            return comment.charAt(0) === ' ' ? comment.slice(1) : comment; // delete first space
         case 'comment':
             comment = ~comment.indexOf(';') ? comment.split(';')[2] : comment;
             return comment.charAt(0) === ' ' ? comment.slice(1) : comment;
@@ -47,12 +52,11 @@ function createTable(comments) {
     let maxLengthUser = 0, maxLengthDate = 0, maxLengthComment = 0, maxLengthFileName = 0;
 
     comments.unshift({"important": '!', "user": 'user', "date": 'date', "comment": 'comment', "fileName": 'fileName'});
-
     comments.forEach(comment => {
-        comment.user.length > maxLengthUser ? maxLengthUser = comment.user.length :
-            comment.date.length > maxLengthDate ? maxLengthDate = comment.date.length :
-                comment.comment.length > maxLengthComment ? maxLengthComment = comment.comment.length :
-                    comment.fileName.length > maxLengthFileName ? maxLengthFileName = comment.fileName.length : null;
+        comment.user.length > maxLengthUser ? maxLengthUser = comment.user.length : null;
+        comment.date.length > maxLengthDate ? maxLengthDate = comment.date.length : null;
+        comment.comment.length > maxLengthComment ? maxLengthComment = comment.comment.length : null;
+        comment.fileName.length > maxLengthFileName ? maxLengthFileName = comment.fileName.length : null;
     });
     maxLengthUser = maxLengthUser > 10 ? 10 : maxLengthUser;
     maxLengthDate = maxLengthDate > 12 ? 12 : maxLengthDate;
@@ -88,20 +92,36 @@ function createTable(comments) {
 
         console.log(`  ${comment.important}  |  ${user}  |   ${date}  |  ${com}  |  ${fileName}  `);
 
-        // calculation width of the table
-        index === 0 ? console.log(''.padEnd(maxLengthUser + maxLengthDate + maxLengthComment + maxLengthFileName + 24, '-')) : null;
+        // calculation width of the table and create separating line
+        index === 0 || index === comments.length - 1 ? console.log(''.padEnd(maxLengthUser + maxLengthDate + maxLengthComment + maxLengthFileName + 26, '-')) : null;
     });
 }
 
-function showComments() {
+function showAllComments() {
     const comments = getCommentsFile();
     createTable(comments);
+}
+
+function showImportantComments() {
+    let comments = getCommentsFile();
+    comments = comments.filter(comment => comment.important === '!');
+    createTable(comments);
+}
+
+function showUserComments() {
+
 }
 
 function processCommand(command) {
     switch (command) {
         case ' ':
-            showComments();
+            showAllComments();
+            break;
+        case 'important':
+            showImportantComments();
+            break;
+        case 'user':
+            showUserComments();
             break;
         case 'exit':
             process.exit(0);
@@ -113,5 +133,5 @@ function processCommand(command) {
 }
 
 // TODO : Nik;2015-12-11 ; my name is Nik
-// TODO you can do it!
+// todo you can do it!
 // TODO nik; 2012; lalalala!
