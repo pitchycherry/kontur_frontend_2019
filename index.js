@@ -127,6 +127,46 @@ function sortImportance() {
     createTable(comments);
 }
 
+function sortUser() {
+    let comments = getCommentsFile();
+
+    comments.sort(function (a, b) {
+        return a.user.toLowerCase().localeCompare(b.user.toLowerCase());
+    });
+    let emptyUserComments = comments.filter(comment => comment.user === '');
+    comments = comments.filter(comment => comment.user != '');
+    comments = comments.concat(emptyUserComments);
+    createTable(comments);
+}
+
+function sortDate() {
+    let comments = getCommentsFile();
+    comments.sort(function (a, b) {
+        return new Date(b.date) - new Date(a.date);
+    });
+    let emptyDateComments = comments.filter(comment => comment.date === '');
+    comments = comments.filter(comment => comment.user != '');
+    comments = comments.concat(emptyDateComments);
+    return comments;
+}
+
+function showDateComments(d) {
+    let date = new Date(d);
+    let comments = sortDate();
+    let limit = 0;
+    for (let i = 0; i < comments.length; i++) {
+        let currentDate = new Date(comments[i].date);
+        if (date > currentDate) {
+            limit = i;
+            break;
+        }
+    }
+    comments = comments.slice(0, limit).sort(function (a, b) {
+        return new Date(a.date) - new Date(b.date);
+    });
+    createTable(comments);
+}
+
 function processCommand(command) {
     switch (command) {
         case 'show':
@@ -141,6 +181,16 @@ function processCommand(command) {
             break;
         case 'sort importance':
             sortImportance();
+            break;
+        case 'sort user':
+            sortUser();
+            break;
+        case 'sort date':
+            createTable(sortDate());
+            break;
+        case command.startsWith('date') ? command : '':
+            let date = command.slice(5);
+            showDateComments(date);
             break;
         case 'exit':
             process.exit(0);
