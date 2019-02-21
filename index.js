@@ -49,7 +49,8 @@ function getAttribute(attribute, comment) {
 function createTable(comments) {
     let maxLengthUser = 0, maxLengthDate = 0, maxLengthComment = 0, maxLengthFileName = 0;
     let table = '';
-    comments.unshift({"important": '!', "user": 'user', "date": 'date', "comment": 'comment', "fileName": 'fileName'});
+    comments.unshift({"important": '!', "user": 'user', "date": 'date', "comment": 'comment', "fileName": 'fileName'}); // table title
+    // calculating max width of columns
     comments.forEach(comment => {
         comment.user.length > maxLengthUser ? maxLengthUser = comment.user.length : null;
         comment.date.length > maxLengthDate ? maxLengthDate = comment.date.length : null;
@@ -115,13 +116,10 @@ function showUserComments(name) {
 function sortImportance() {
     let comments = getCommentsFile();
     let importantComments = comments.filter(comment => comment.important === '!');
-    for (let i = 0; i < importantComments.length - 1; i++) {
-        for (let j = 0; j < importantComments.length - 1 - i; j++) {
-            if (importantComments[j + 1].comment.split('!').length - 1 > importantComments[j].comment.split('!').length - 1) {
-                [importantComments[j + 1], importantComments[j]] = [importantComments[j], importantComments[j + 1]];
-            }
-        }
-    }
+
+    importantComments.sort(function (a, b) {
+        return b.comment.split('!').length - a.comment.split('!').length;
+    });
     comments = comments.filter(comment => comment.important != '!');
     comments = importantComments.concat(comments);
     createTable(comments);
@@ -131,7 +129,7 @@ function sortUser() {
     let comments = getCommentsFile();
 
     comments.sort(function (a, b) {
-        return a.user.toLowerCase().localeCompare(b.user.toLowerCase());
+        return a.user.toLowerCase().localeCompare(b.user.toLowerCase()); // case insensitive
     });
     let emptyUserComments = comments.filter(comment => comment.user === '');
     comments = comments.filter(comment => comment.user != '');
@@ -145,7 +143,7 @@ function sortDate() {
         return new Date(b.date) - new Date(a.date);
     });
     let emptyDateComments = comments.filter(comment => comment.date === '');
-    comments = comments.filter(comment => comment.user != '');
+    comments = comments.filter(comment => comment.date != '');
     comments = comments.concat(emptyDateComments);
     return comments;
 }
@@ -203,5 +201,3 @@ function processCommand(command) {
 
 // TODO : Nik;2015-12-11 ; my name is Nik
 // todo you can do it!
-// TODO nik; 2012; lalalala!
-// todo peshka; 2015-11-17; shah
